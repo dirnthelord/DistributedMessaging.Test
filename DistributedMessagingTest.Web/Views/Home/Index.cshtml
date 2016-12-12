@@ -1,0 +1,117 @@
+﻿<div class="well">
+    <input type="text" id="msg" />
+    <a id="broadcast" href="#">Send message</a>
+    <a id="joingroup" href="#">Join group</a>
+    <a id="sendgroup" href="#">Send group message</a>
+</div>
+<div class="well">
+
+    <p>Messages : </p>
+    <div id="console"> </div>
+    <ul id="messages"> </ul>
+
+</div>
+<div class="progress">
+    <div class="progress-bar" role="progressbar" aria-valuenow="0"
+         aria-valuemin="0" aria-valuemax="100" style="width:0%">
+        <span class="sr-only">70% Complete</span>
+    </div>
+</div>
+@section scripts
+{
+    <script type="text/javascript">
+        $(function () {
+
+            // Proxy created on the fly
+            var chat = $.connection.chat;
+            $.connection.hub.logging = true;
+
+            var actions = {
+                text : function(data) {
+                    console.log(data);
+                }
+            }
+            
+
+            var handleMessage = function(message, from) {
+                switch (from) {
+                    case 0: //Toastr
+                        toastr.success(message.What);
+                        break;
+                    case 1: //Progress
+                        $('.progress-bar').css('width', message.What + '%').attr('aria-valuenow', message.What);
+                        break;
+                    case 2: //Log
+                        $('#console').html('Log : ' + JSON.stringify(message));
+                        break;
+                    case 3: //Content
+                        $('#messages').prepend('<li>' + JSON.stringify(message) + " from " + from + '</li>');
+                        break;
+                    case 4: //Action
+                        actions[message.What](message);
+                        break; 
+                    default:
+                        $('#console').html('default : ' + JSON.stringify(message));
+                        break;
+                }
+            };
+
+            // Declare a function on the chat hub so the server can invoke it
+            chat.client.addMessage = function (message, from) {
+               
+               // $('#messages').prepend('<li>' + JSON.stringify(message) + " from " + from + '</li>');
+
+                handleMessage(message, from);
+            };
+
+            chat.client.onConsoleMessage = function (message) {
+
+                $('#console').html('From the console application : ' + JSON.stringify(message));
+            };
+
+            $("#broadcast").click(function () {
+                // Call the chat method on the server
+                chat.server.send($('#msg').val())
+                 .done(function () {
+                     console.log('Success!');
+                 })
+                 .fail(function (e) {
+                     console.warn(e);
+                 });
+            });
+
+            $("#sendgroup").click(function () {
+                // Call the chat method on the server
+                chat.server.sendGroup($('#msg').val())
+                 .done(function () {
+                     console.log('Success!');
+                 })
+                 .fail(function (e) {
+                     console.warn(e);
+                 });
+            });
+
+            $("#joingroup").click(function () {
+                chat.server.joinGroup("SecretGroup")
+                 .done(function () {
+                     console.log('JoinGroup Success!');
+                     $("#joingroup").hide();
+                 })
+                 .fail(function (e) {
+                     console.warn(e);
+                 });
+            });
+
+            $("#broadcast").hide();
+            $("#joingroup").hide();
+
+            // Start the connection
+            $.connection.hub.start(function () {
+                $("#broadcast").show();
+                $("#joingroup").show();
+                console.log("Success");
+            });
+        });
+    </script>
+
+}
