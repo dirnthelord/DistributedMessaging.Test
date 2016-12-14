@@ -13,7 +13,7 @@ namespace DistributedMessagingTest.ConsoleConsumer
     class SomethingHappenedConsumer : IConsumer<ISomethingHappened>
     {
         public Task Consume(ConsumeContext<ISomethingHappened> context)
-        {
+        { 
             Console.WriteLine(" text : " + context.Message.What);
 
             Console.WriteLine(" when : " + context.Message.When);

@@ -19,7 +19,7 @@ namespace DistributedMessagingTest.Web
     class SomethingHappenedConsumer : IConsumer<ISomethingHappened>
     {
         public Task Consume(ConsumeContext<ISomethingHappened> context)
-        {
+        { 
             Trace.WriteLine(" text : " + context.Message.What);
 
             Trace.WriteLine(" when : " + context.Message.When);
